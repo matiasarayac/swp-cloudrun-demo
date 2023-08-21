@@ -1,0 +1,14 @@
+steps:
+  - name: maven:3-jdk-11
+    entrypoint: mvn
+    args: [ 'package','-Dmaven.test.skip=true' ]
+  # build the container image
+  - name: "gcr.io/cloud-builders/docker"
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/swp-demo-396114/images-repo/swp-demo:latest', '--build-arg=JAR_FILE=target/swp-demo-1.0.0.jar', '.']
+    # push container image
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "us-central1-docker.pkg.dev/swp-demo-396114/images-repo/swp-demo:latest"]
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args: [ 'run', 'deploy', 'swp-demo', '--image', 'us-central1-docker.pkg.dev/swp-demo-396114/images-repo/swp-demo:latest', '--region', 'us-central1' ]
